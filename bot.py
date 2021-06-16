@@ -76,6 +76,20 @@ def show_histogram(currency, start_date, end_date):
 
     return None
 
+def rates_date(date):
+    url = requests.get(f'https://api.exchangerate.host/{date}?base=USD&places=2').json()
+    rates = url['rates']
+    _date = url['date']
+    rates_list = ""
+
+    for k, v in rates.items():
+        if str(v) == '0':
+            continue
+        else:
+            rates_list += str(k) + " : " + str(v) + "\n"
+
+    return rates_list
+
 
 @bot.message_handler(commands=['start', 'help'])
 def greet(message):
@@ -88,7 +102,8 @@ def quick_command(message):
     btn2 = types.KeyboardButton('/rates')
     btn3 = types.KeyboardButton('/exchange')
     btn4 = types.KeyboardButton('/histogram')
-    markup.add(btn1, btn2, btn3, btn4)
+    btn5 = types.KeyboardButton('/date')
+    markup.add(btn1, btn2, btn3, btn4, btn5)
     bot.send_message(message.chat.id, "Choose command:", reply_markup=markup)
 
 @bot.message_handler(commands=['currencies', 'currency'])
@@ -146,7 +161,7 @@ def currency_converter_final(message):
         bot.send_message(message.chat.id, "Something went wrong :(")
     quick_command(message)
 
-# historical chain
+# historical time-series chain
 @bot.message_handler(commands=['histogram', 'graph'])
 def histogram_step1(message):
     bot.send_message(message.chat.id, available_currencies())
@@ -184,5 +199,15 @@ def show_history_rates(message):
             "No exchange rate data is available for the selected currency.")
         print(e)
     quick_command(message)
+
+# historical date rates
+@bot.message_handler(commands=['hr', 'date'])
+def date_rates(message):
+    bot.send_message(message.chat.id, "Type date to check rates")
+    bot.register_next_step_handler(message, date_rates_final)
+
+def date_rates_final(message):
+    date_for_rates = message
+    bot.send_message(message.chat.id, rates_date(date_for_rates))
 
 bot.polling()
