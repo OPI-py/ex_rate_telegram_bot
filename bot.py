@@ -203,11 +203,11 @@ def show_history_rates(message):
 # historical date rates
 @bot.message_handler(commands=['hr', 'date'])
 def date_rates(message):
-    bot.send_message(message.chat.id, "Type date to check rates")
+    bot.send_message(message.chat.id, "Type date to check rates, e.g.(2020-02-20)")
     bot.register_next_step_handler(message, date_rates_final)
 
 def date_rates_final(message):
-    date_for_rates = message
+    date_for_rates = message.text
     bot.send_message(message.chat.id, rates_date(date_for_rates))
 
 bot.polling()
